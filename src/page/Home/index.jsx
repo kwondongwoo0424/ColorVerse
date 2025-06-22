@@ -1,9 +1,11 @@
 import * as S from "./style";
+import {useState} from "react"
 import Header from "../../components/Header";
 import ColorSearchBox from "../../components/ColorSearchBox";
-import ColorPaltte from "../../components/ColorPalette"
+import ColorPaltte from "../../components/ColorPalette";
 
 const Home = () => {
+  const [color, setColor] = useState('#fefae0');
 
   return (
     <>
@@ -17,8 +19,8 @@ const Home = () => {
               <br /> color schemes and make something cool!
             </S.TextContent>
           </S.TitleBox>
-          <ColorSearchBox />
-          <ColorPaltte />
+          <ColorSearchBox color={color} setColor={setColor} />
+          <ColorPaltte color={color} setColor={setColor} />
         </S.Contents>
       </S.Wrap>
     </>

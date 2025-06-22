@@ -1,23 +1,25 @@
-import { useState } from "react";
-import * as S from "./style"
-import { rgbToHex } from "../../utils/rgbToHex";
-import { rgbNumsToHex } from "../../utils/rgbNumsToHex";
+import { useState, useEffect } from "react";
+import * as S from "./style";
+import { rgbToHex, rgbNumsToHex } from "../../utils/translateColorType";
 import { getRandomHex } from "../../utils/getRamdomHex";
 
-const ColorSearchBox = () => {
-  const [color, setColor] = useState("#fefae0");
-  const [inputValue, setInputValue] = useState("#fefae0");
+const ColorSearchBox = ({ color, setColor }) => {
+  const [inputValue, setInputValue] = useState(color || "#fefae0");
+
+  // 외부 color가 바뀌면 input도 같이 반영
+  useEffect(() => {
+    setInputValue(color);
+  }, [color]);
 
   const onRandomBtnClick = () => {
     const randomHex = getRandomHex();
     setColor(randomHex);
-    setInputValue(randomHex);
     console.log("랜덤 색상:", randomHex);
   };
 
   const handleColorPickerChange = (e) => {
-    setColor(e.target.value);
-    setInputValue(e.target.value);
+    const value = e.target.value;
+    setColor(value);
   };
 
   const handleHexChange = (e) => {
@@ -69,9 +71,8 @@ const ColorSearchBox = () => {
           title="HEX (#RGB 또는 #RRGGBB), RGB 함수형식, 또는 콤마로 구분된 숫자(예: 217,217,217) 입력 가능"
           required
         />
-        
         <button type="button" onClick={onRandomBtnClick}>
-          random
+          Random
         </button>
       </form>
     </S.SearchColorBox>
