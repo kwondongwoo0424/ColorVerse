@@ -7,14 +7,15 @@ const ColorPaltte = ({ color }) => {
 
   return (
     <S.ColorPaletteContainer>
-      <S.ColorPaletteBox>asdkjasdhasud</S.ColorPaletteBox>
-      {hexCodes.map((color, index) => {
-        return (
-          <div key={index} style={{ backgroundColor: color}}>
-            {color}
-          </div>
-        );
-      })}
+      <S.ColorPaletteBox>
+        {hexCodes.map((color, index) => {
+          return (
+            <div key={index} style={{ backgroundColor: color }}>
+              {color}
+            </div>
+          );
+        })}
+      </S.ColorPaletteBox>
     </S.ColorPaletteContainer>
   );
 };
