@@ -10,9 +10,9 @@ const ColorPaltte = ({ color }) => {
       <S.ColorPaletteBox>
         {hexCodes.map((color, index) => {
           return (
-            <div key={index} style={{ backgroundColor: color }}>
+            <S.ColorBox key={index} style={{ backgroundColor: color }}>
               {color}
-            </div>
+            </S.ColorBox>
           );
         })}
       </S.ColorPaletteBox>
