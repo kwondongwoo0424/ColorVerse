@@ -1,9 +1,9 @@
 import * as S from "./style";
-import { recommendColors } from "../../utils/recommendColors";
-import { hexToRgb } from "../../utils/translateColorType";
 
 const ColorPaltte = ({ color }) => {
-  const hexCodes = recommendColors(hexToRgb(color));
+  console.log("ColorPaltte",color)
+  const hexCodes = ["#606C38", "#283618", "#FEFAE0", "#DDA15E"]
+
 
   return (
     <S.ColorPaletteContainer>

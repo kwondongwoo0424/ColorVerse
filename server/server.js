@@ -1,4 +1,3 @@
-// server.js (CommonJS 방식)
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -8,7 +7,6 @@ dotenv.config();
 const app = express();
 const port = 5050;
 
-// 🔥 CORS 미들웨어 반드시 express.json()보다 먼저
 app.use(cors({
   origin: "http://localhost:5173",
   methods: ["GET", "POST", "OPTIONS"],
@@ -25,7 +23,7 @@ const openai = new OpenAI({
 });
 
 app.get("/", (req, res) => {
-  res.send("✅ 서버 정상 작동 중");
+  res.send("서버 정상 작동 중");
 });
 
 app.post("/api/chat", async (req, res) => {
@@ -45,5 +43,5 @@ app.post("/api/chat", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`✅ Server running on http://localhost:${port}`);
+  console.log(`Server running on http://localhost:${port}`);
 });
