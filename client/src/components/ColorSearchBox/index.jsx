@@ -1,119 +1,144 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import * as S from "./style";
-import { rgbToHex, rgbNumsToHex } from "../../utils/translateColorType";
 import { getRandomHex } from "../../utils/getRamdomHex";
 import { fetchRecommendColorsApi } from "../../Api/fetchRecommendColorsApi";
+import { fetchRecommendSecondaryColorApi } from "../../Api/fetchRecommendSecondaryColor";
 
-const ColorSearchBox = ({ color, setColor }) => {
+const ColorSearchBox = ({
+  color,
+  setColor,
+  setRecommendedColor,
+  setPrimaryColor,
+  setSecondaryColor,
+}) => {
+  const [pickerColor, setPickerColor] = useState(color || "#fefae0");
   const [inputValue, setInputValue] = useState(color || "#fefae0");
-  const [tempColor, setTempColor] = useState(color || "#fefae0");
-  const [_isPickerActive, setIsPickerActive] = useState(false);
-  const [outputValue, setOutputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // 외부 color가 바뀌면 input도 같이 반영
+  // 외부 color가 바뀌면 둘 다 반영
   useEffect(() => {
-    setInputValue(color);
-    setTempColor(color);
+    if (color) {
+      setPickerColor(color);
+      setInputValue(color);
+    }
   }, [color]);
 
-  //랜덤 버튼 클릭 (랜덤 색상 생성)
-  const onRandomBtnClick = () => {
-    const randomHex = getRandomHex();
-    setColor(randomHex);
-    onColorSubmit
-    console.log("랜덤 색상:", randomHex);
-  };
-
-  // 컬러 선택 중 (계속 바뀔 때는 임시 저장만)
-  const handleColorPickerChange = (e) => {
-    setTempColor(e.target.value);
-  };
-
-  // 컬러픽커가 닫힐 때
-  const handleColorPickerBlur = () => {
-    setIsPickerActive(false);
-    if (tempColor !== color) {
-      setColor(tempColor);
-      onColorSubmit
-      console.log("최종 색상 선택됨:", tempColor);
-    }
-  };
-
-  const handleColorPickerFocus = () => {
-    setIsPickerActive(true);
-  };
-
-  //입력한 색상이 바뀔때
-  const handleInputValueChange = (e) => {
-    setInputValue(e.target.value);
-  };
-
-  const onColorSubmit = async (e) => {
-    e.preventDefault();
-    if (!inputValue.trim()) return
-    console.log(12342532123)
-    fetchRecommendColorsApi(inputValue);
+  // 색상 유효성 검사
+  const validateColor = useCallback((colorValue) => {
     const hexRegex = /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;
     const rgbRegex = /^rgb\(\s*(\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\s*\)$/;
     const numsRegex = /^(\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})$/;
+    return (
+      hexRegex.test(colorValue) ||
+      rgbRegex.test(colorValue) ||
+      numsRegex.test(colorValue)
+    );
+  }, []);
 
-    if (hexRegex.test(inputValue)) {
-      setColor(inputValue.toLowerCase());
-      console.log("HEX 색상 입력:", inputValue);
-    } else if (rgbRegex.test(inputValue)) {
-      const hex = rgbToHex(inputValue);
-      if (hex) {
-        setColor(hex);
-        console.log("RGB 색상 입력(HEX 변환):", hex);
-      } else {
-        alert("RGB 값이 올바르지 않습니다.");
-      }
-    } else if (numsRegex.test(inputValue)) {
-      const hex = rgbNumsToHex(inputValue);
-      if (hex) {
-        setColor(hex);
-        console.log("숫자 RGB 입력(HEX 변환):", hex);
-      } else {
-        alert("RGB 숫자 값이 올바르지 않습니다.");
-      }
-    } else {
-      alert("유효한 색상 형식이 아닙니다");
-    }
+  // 추천 색상 요청
+  const requestRecommendedColors = useCallback(
+    async (colorValue) => {
+      if (!colorValue.trim() || isLoading) return;
 
-    try {
-      console.log(123)
-      setOutputValue(fetchRecommendColorsApi(color));
-    } catch (e) {
-      console.error("Error fetching from server:", e);
-      setOutputValue("오류: 서버 요청 실패");
+      if (!validateColor(colorValue)) {
+        alert("유효한 색상 형식이 아닙니다");
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        const recommendedColor = await fetchRecommendColorsApi(colorValue);
+        const recommendedSecondaryColor = await fetchRecommendSecondaryColorApi
+        setRecommendedColor(recommendedColor);
+        setPrimaryColor(colorValue)
+        setSecondaryColor(recommendedSecondaryColor)
+      } catch (err) {
+        console.error("Error fetching from server:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [setRecommendedColor, validateColor, isLoading]
+  );
+
+  // 색상 적용 및 추천 요청 (모든 상태 동기화)
+  const applyColor = useCallback(
+    (newColor) => {
+      setColor(newColor);
+      setPickerColor(newColor);
+      setInputValue(newColor);
+      requestRecommendedColors(newColor);
+    },
+    [setColor, requestRecommendedColors]
+  );
+
+  // 랜덤 버튼 클릭
+  const handleRandomClick = useCallback(() => {
+    const randomHex = getRandomHex();
+    applyColor(randomHex);
+  }, [applyColor]);
+
+  // 컬러 피커 변경 - 실시간으로 텍스트 입력도 같이 변경
+  const handleColorPickerChange = useCallback((e) => {
+    const newColor = e.target.value;
+    setPickerColor(newColor);
+    setInputValue(newColor); // 텍스트 입력도 실시간 업데이트
+  }, []);
+
+  // 컬러 피커 닫힐 때 - 최종 색상 적용
+  const handleColorPickerBlur = useCallback(() => {
+    if (pickerColor !== color) {
+      applyColor(pickerColor);
     }
-  };
+  }, [pickerColor, color, applyColor]);
+
+  // 텍스트 입력 변경 - 컬러피커는 건드리지 않음
+  const handleInputChange = useCallback((e) => {
+    setInputValue(e.target.value);
+    // 컬러피커는 이전 색상 유지
+  }, []);
+
+  // 엔터 키 또는 폼 제출 - 텍스트 입력 기준으로 모든 것 동기화
+  const handleSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (inputValue !== color) {
+        applyColor(inputValue);
+      }
+    },
+    [inputValue, color, applyColor]
+  );
 
   return (
-    <S.SearchColorBox>
-      <form onSubmit={onColorSubmit}>
-        <input
-          type="color"
-          value={tempColor}
-          onChange={handleColorPickerChange}
-          onFocus={handleColorPickerFocus}
-          onBlur={handleColorPickerBlur}
-        />
-        <input
-          type="text"
-          placeholder="#FFFFFF 또는 rgb(255, 255, 255) 또는 217,217,217"
-          value={inputValue}
-          onChange={handleInputValueChange}
-          pattern="^(#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})|rgb\(\s*(\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\s*\)|(\d{1,3},\s*\d{1,3},\s*\d{1,3}))$"
-          title="HEX (#RGB 또는 #RRGGBB), RGB 함수형식, 또는 콤마로 구분된 숫자(예: 217,217,217) 입력 가능"
-          required
-        />
-        <button type="button" onClick={onRandomBtnClick}>
-          Random
-        </button>
-      </form>
-      <div>{outputValue}</div>
-    </S.SearchColorBox>
+    <S.Wrap>
+      <S.SearchColorBox>
+        <form onSubmit={handleSubmit}>
+          <S.ColorPicker
+            type="color"
+            value={pickerColor}
+            onChange={handleColorPickerChange}
+            onBlur={handleColorPickerBlur}
+            disabled={isLoading}
+          />
+          <S.ColorInputBox
+            type="text"
+            placeholder="#FFFFFF or rgb(255, 255, 255) or 217,217,217"
+            value={inputValue}
+            onChange={handleInputChange}
+            disabled={isLoading}
+            required
+          />
+          <S.RandomBtn
+            type="button"
+            onClick={handleRandomClick}
+            disabled={isLoading}
+          >
+            {isLoading ? "loading..." : "Random"}
+          </S.RandomBtn>
+        </form>
+      </S.SearchColorBox>
+    </S.Wrap>
   );
 };
 

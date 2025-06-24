@@ -1,23 +1,20 @@
+
 import * as S from "./style";
 
-const ColorPaltte = ({ color }) => {
-  console.log("ColorPaltte",color)
-  const hexCodes = ["#606C38", "#283618", "#FEFAE0", "#DDA15E"]
-
-
+const ColorPalette = ({ recommendedColor }) => {
   return (
     <S.ColorPaletteContainer>
-      <S.ColorPaletteBox>
-        {hexCodes.map((color, index) => {
-          return (
-            <S.ColorBox key={index} style={{ backgroundColor: color }}>
-              {color}
+      {recommendedColor.map((arr, index) => (
+        <S.ColorPaletteBox key={index}>
+          {arr.map((color, idx) => (
+            <S.ColorBox key={idx} style={{ backgroundColor: color }}>
+              <S.ColorCode>{color}</S.ColorCode>
             </S.ColorBox>
-          );
-        })}
-      </S.ColorPaletteBox>
+          ))}
+        </S.ColorPaletteBox>
+      ))}
     </S.ColorPaletteContainer>
   );
 };
 
-export default ColorPaltte;
+export default ColorPalette;
