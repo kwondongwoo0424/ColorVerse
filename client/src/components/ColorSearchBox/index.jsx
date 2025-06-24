@@ -4,6 +4,22 @@ import { getRandomHex } from "../../utils/getRamdomHex";
 import { fetchRecommendColorsApi } from "../../Api/fetchRecommendColorsApi";
 import { fetchRecommendSecondaryColorApi } from "../../Api/fetchRecommendSecondaryColor";
 
+function rgbToHex(rgb) {
+  // "rgb(255, 0, 0)" 또는 "255,0,0" 형태 지원
+  let result = rgb.match(/\d{1,3}/g);
+  if (!result || result.length < 3) return "#000000";
+  return (
+    "#" +
+    result
+      .slice(0, 3)
+      .map((x) => {
+        const hex = parseInt(x).toString(16);
+        return hex.length === 1 ? "0" + hex : hex;
+      })
+      .join("")
+  );
+}
+
 const ColorSearchBox = ({
   color,
   setColor,
@@ -49,10 +65,10 @@ const ColorSearchBox = ({
 
       try {
         const recommendedColor = await fetchRecommendColorsApi(colorValue);
-        const recommendedSecondaryColor = await fetchRecommendSecondaryColorApi
+        const recommendedSecondaryColor = await fetchRecommendSecondaryColorApi;
         setRecommendedColor(recommendedColor);
-        setPrimaryColor(colorValue)
-        setSecondaryColor(recommendedSecondaryColor)
+        setPrimaryColor(colorValue);
+        setSecondaryColor(recommendedSecondaryColor);
       } catch (err) {
         console.error("Error fetching from server:", err);
       } finally {
@@ -110,13 +126,26 @@ const ColorSearchBox = ({
     [inputValue, color, applyColor]
   );
 
+  const getPickerValue = () => {
+    if (/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/.test(inputValue)) {
+      return inputValue;
+    }
+    if (
+      /^rgb\(/.test(inputValue) ||
+      /^(\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})$/.test(inputValue)
+    ) {
+      return rgbToHex(inputValue);
+    }
+    return "#000000"; // fallback
+  };
+
   return (
     <S.Wrap>
       <S.SearchColorBox>
         <form onSubmit={handleSubmit}>
           <S.ColorPicker
             type="color"
-            value={pickerColor}
+            value={getPickerValue()}
             onChange={handleColorPickerChange}
             onBlur={handleColorPickerBlur}
             disabled={isLoading}
