@@ -69,6 +69,7 @@ const ColorSearchBox = ({
         setPrimaryColor(colorValue);
         setSecondaryColor(recommendedSecondaryColor);
       } catch (err) {
+        alert("에러가 발생했습니다. 다시 시도하세요")
         console.error("Error fetching from server:", err);
       } finally {
         setIsLoading(false);
