@@ -5,7 +5,7 @@ const generateOverlayScale = (color) => {
 
   for (let i = 0; i < 5; i++) {
     const percent = (i + 1) * 20; // 20%, 40%, 60%, 80%, 100%
-    const whiteOverlay = tinycolor.mix("#ffffff", color, percent).toHexString(); // 진해짐
+    const whiteOverlay = tinycolor.mix("#ffffff", color, percent).toHexString();
     const blackOverlay = tinycolor.mix("#000000", color, percent).toHexString();
 
     scale.push({

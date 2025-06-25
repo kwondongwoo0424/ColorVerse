@@ -5,7 +5,6 @@ import { fetchRecommendColorsApi } from "../../Api/fetchRecommendColorsApi";
 import { fetchRecommendSecondaryColorApi } from "../../Api/fetchRecommendSecondaryColor";
 
 function rgbToHex(rgb) {
-  // "rgb(255, 0, 0)" 또는 "255,0,0" 형태 지원
   let result = rgb.match(/\d{1,3}/g);
   if (!result || result.length < 3) return "#000000";
   return (
